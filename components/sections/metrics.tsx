@@ -5,17 +5,16 @@ import { useEffect, useRef } from "react"
 
 const metrics = [
   { label: "Data Points Processed", value: "10M+" },
-  { label: "AI Models Deployed", value: "10+" },
+  { label: "AI Models Deployed", value: "50+" },
   { label: "Client Efficiency Gain", value: "40%" },
   { label: "Uptime Guaranteed", value: "99.9%" },
 ]
 
 export function Metrics() {
   return (
-    // Reverted to your original padding and clean background
     <section id="metrics" className="border-y border-zinc-800 bg-zinc-950/50 py-12 relative overflow-hidden">
       
-      {/* Subtle Background Glow (Optional modern touch) */}
+      {/* Background Glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[200px] w-[200px] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none"></div>
       
       <div className="container px-4 md:px-6 mx-auto relative z-10">
@@ -29,14 +28,10 @@ export function Metrics() {
               viewport={{ once: true }}
               className="group flex flex-col items-center justify-center space-y-2 text-center cursor-default"
             >
-              {/* MODERN FEATURE 1: Hover Glow Container 
-                 The number will scale up and glow blue when you hover this area
-              */}
               <div className="transition-transform duration-300 group-hover:scale-110 group-hover:drop-shadow-[0_0_15px_rgba(59,130,246,0.5)]">
                 <AnimatedCounter value={metric.value} />
               </div>
 
-              {/* Label: Turns white on hover */}
               <span className="text-xs md:text-sm font-medium text-zinc-500 uppercase tracking-wider transition-colors duration-300 group-hover:text-zinc-300">
                 {metric.label}
               </span>
@@ -48,11 +43,10 @@ export function Metrics() {
   )
 }
 
-// --- MODERN FEATURE 2: The Counting Animation Logic ---
 function AnimatedCounter({ value }: { value: string }) {
-  const ref = useRef<HTMLSpanElement>(null)
+  // FIXED: Changed HTMLSpanElement to HTMLDivElement to match the <div> below
+  const ref = useRef<HTMLDivElement>(null)
   
-  // 1. Parse number vs suffix (e.g. "99.9%" -> 99.9 and "%")
   const match = value.match(/([\d.]+)(.*)/)
   const numberPart = match ? parseFloat(match[1]) : 0
   const suffixPart = match ? match[2] : ""
@@ -65,7 +59,6 @@ function AnimatedCounter({ value }: { value: string }) {
     duration: 1.5
   })
 
-  // Format the number (keep decimals if needed)
   const displayValue = useTransform(springValue, (current) => {
     const isFloat = numberPart % 1 !== 0
     return isFloat ? current.toFixed(1) : Math.round(current).toString()
