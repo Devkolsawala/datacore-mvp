@@ -84,3 +84,23 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%); /* Moves left by 50% or 100% depending on duplicate width */
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+
+/* Pause animation on hover for better UX */
+.animate-marquee:hover {
+  animation-play-state: paused;
+}

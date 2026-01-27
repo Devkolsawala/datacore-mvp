@@ -1,4 +1,5 @@
 import { Hero } from "@/components/sections/hero"
+import { TechMarquee } from "@/components/ui/tech-marquee"
 import { Services } from "@/components/sections/services"
 import { About } from "@/components/sections/about"
 import { Metrics } from "@/components/sections/metrics"
@@ -9,6 +10,7 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col bg-zinc-950">
       <Hero />
+      <TechMarquee />
       <Services />
       <About />
       <Metrics />

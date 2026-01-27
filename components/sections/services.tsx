@@ -1,6 +1,6 @@
-"use client" // Added use client to handle scroll
+"use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { SpotlightCard } from "@/components/ui/spotlight-card" // 1. Import SpotlightCard
 import { Smartphone, Globe, BarChart3, ArrowRight, BrainCircuit } from "lucide-react"
 
 const services = [
@@ -35,9 +35,11 @@ export function Services() {
   };
 
   return (
-    // Reduced padding: py-24 -> py-16
+    // Preserved your padding (py-16) and background
     <section id="services" className="py-16 bg-zinc-950">
       <div className="container px-4 md:px-6 mx-auto">
+        
+        {/* Header Section (Unchanged) */}
         <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
           <div className="inline-flex items-center rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-sm text-blue-400">
             <span className="flex h-2 w-2 rounded-full bg-blue-500 mr-2"></span>
@@ -51,30 +53,41 @@ export function Services() {
           </p>
         </div>
         
+        {/* Grid (Preserved lg:grid-cols-4) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((service, index) => (
-            <Card 
+            <SpotlightCard 
               key={index} 
-              className="group relative border-zinc-800 bg-zinc-900/50 hover:bg-zinc-900 hover:border-zinc-700 transition-all duration-300 cursor-pointer"
+              // 2. Added 'group' to enable hover effects, kept your cursor-pointer
+              className="group p-6 h-full flex flex-col justify-between cursor-pointer"
+              // 3. Re-attached your scroll function
               onClick={scrollToContact}
             >
-              <CardHeader>
+              {/* Header Area */}
+              <div className="mb-4">
+                {/* Icon Box with your specific hover colors */}
                 <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-800 group-hover:bg-blue-600 transition-colors duration-300">
                   <service.icon className="h-6 w-6 text-zinc-100" />
                 </div>
-                <CardTitle className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">
+                
+                {/* Title */}
+                <h3 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">
                   {service.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
+                </h3>
+              </div>
+              
+              {/* Content Area */}
+              <div>
                 <p className="text-zinc-400 text-sm leading-relaxed mb-4 min-h-[80px]">
                   {service.description}
                 </p>
+                
+                {/* Learn More Link with your animation */}
                 <div className="flex items-center text-sm font-medium text-blue-500 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
                   Learn more <ArrowRight className="ml-1 h-4 w-4" />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </SpotlightCard>
           ))}
         </div>
       </div>
