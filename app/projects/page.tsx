@@ -1,11 +1,12 @@
 "use client"
 
+// 1. FIXED: Relative imports to prevent "Module not found" errors
 import { Navbar } from "../../components/navbar"
 import { Footer } from "../../components/sections/footer" 
 import { SpotlightCard } from "../../components/ui/spotlight-card"
 import { ExternalLink, Smartphone, BrainCircuit, Film, UtensilsCrossed, Sparkles, ArrowUpRight } from "lucide-react"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { motion, Variants } from "framer-motion" // <--- IMPORT 'Variants'
 
 // Projects Data
 const projects = [
@@ -19,7 +20,19 @@ const projects = [
     glow: "rgba(249, 115, 22, 0.2)",
     status: "Flagship",
     tech: ["OpenAI", "Next.js", "Vector DB"],
-    featured: true // This one will span full width
+    featured: true 
+  },
+  {
+    title: "Culinary AI",
+    subtitle: "Personalized Dish Recommender",
+    description: "A smart culinary engine that maps flavor profiles. Suggests dishes based on dietary constraints and preferences.",
+    link: "https://aidishrecommendation-2kfirwo46-dev090502s-projects.vercel.app/", 
+    icon: UtensilsCrossed,
+    color: "from-green-500/20 to-emerald-500/20 text-green-400 border-green-500/30",
+    glow: "rgba(34, 197, 94, 0.2)",
+    status: "Live",
+    tech: ["ML", "Data Science", "Python"],
+    featured: false
   },
   {
     title: "CineMatch AI",
@@ -33,18 +46,7 @@ const projects = [
     tech: ["Python", "Streamlit", "TensorFlow"],
     featured: false
   },
-  {
-    title: "Culinary AI",
-    subtitle: "Personalized Dish Recommender",
-    description: "A smart culinary engine that maps flavor profiles. Suggests dishes based on dietary constraints and preferences.",
-    link: "https://movierecommender-olddmm7qovbgmhpajusjmp.streamlit.app/", 
-    icon: UtensilsCrossed,
-    color: "from-green-500/20 to-emerald-500/20 text-green-400 border-green-500/30",
-    glow: "rgba(34, 197, 94, 0.2)",
-    status: "Live",
-    tech: ["ML", "Data Science", "Python"],
-    featured: false
-  },
+  
   {
     title: "Smart Calc",
     subtitle: "Native Android Utility",
@@ -59,8 +61,9 @@ const projects = [
   }
 ]
 
-// Animation Variants
-const containerVariants = {
+// --- FIX START: Explicitly typed Variants ---
+
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -68,7 +71,7 @@ const containerVariants = {
   }
 }
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: { 
     opacity: 1, 
@@ -76,6 +79,8 @@ const itemVariants = {
     transition: { duration: 0.5, ease: "easeOut" }
   }
 }
+
+// --- FIX END ---
 
 export default function ProjectsPage() {
   return (
