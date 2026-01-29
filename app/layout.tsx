@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { Navbar } from "@/components/navbar"
 import { ContactProvider } from "@/components/contact-provider" // Make sure this is imported
+import { Chatbot } from "@/components/ui/chatbot"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -23,6 +24,7 @@ export default function RootLayout({
         <ContactProvider>
           <Navbar />
           {children}
+          <Chatbot />
         </ContactProvider>
       </body>
     </html>
