@@ -69,9 +69,10 @@ export function Footer() {
           <div className="space-y-6">
             <h4 className="text-sm font-bold text-white uppercase tracking-wider border-b border-zinc-800 pb-2 w-fit">Company</h4>
             <ul className="space-y-4 text-sm text-zinc-400">
-              <li><FooterLink href="#services" onClick={(e) => scrollToSection(e, "services")}>Services</FooterLink></li>
+              {/* FIXED: Explicitly typed 'e' in the arrow function */}
+              <li><FooterLink href="#services" onClick={(e: React.MouseEvent<HTMLAnchorElement>) => scrollToSection(e, "services")}>Services</FooterLink></li>
               <li><Link href="/projects" className="hover:text-blue-400 transition-colors flex items-center gap-2">Projects <span className="text-[10px] bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">New</span></Link></li>
-              <li><FooterLink href="#about" onClick={(e) => scrollToSection(e, "about")}>About Us</FooterLink></li>
+              <li><FooterLink href="#about" onClick={(e: React.MouseEvent<HTMLAnchorElement>) => scrollToSection(e, "about")}>About Us</FooterLink></li>
               <li><Link href="#" className="hover:text-blue-400 transition-colors">Careers</Link></li>
             </ul>
           </div>
@@ -128,7 +129,7 @@ export function Footer() {
         </div>
       </div>
 
-      {/* 4. BACK TO TOP BUTTON (Fixed Position UPDATED to bottom-24) */}
+      {/* BACK TO TOP BUTTON (Fixed to bottom-24) */}
       <AnimatePresence>
         {showTopBtn && (
           <motion.button
@@ -136,7 +137,6 @@ export function Footer() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             onClick={scrollToTop}
-            // FIXED: Changed bottom-8 to bottom-24 to sit ABOVE the chatbot
             className="fixed bottom-24 right-6 z-50 p-3 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-2xl hover:bg-white/20 hover:scale-110 transition-all duration-300 group"
           >
             <ArrowUp className="h-5 w-5 group-hover:-translate-y-1 transition-transform" />
@@ -155,7 +155,7 @@ function SocialIcon({ icon: Icon, href }: { icon: any, href: string }) {
   )
 }
 
-function FooterLink({ href, onClick, children }: { href: string, onClick?: any, children: React.ReactNode }) {
+function FooterLink({ href, onClick, children }: { href: string, onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void, children: React.ReactNode }) {
   return (
     <Link 
       href={href} 
