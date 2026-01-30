@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react"
 import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Loader2, CheckCircle2 } from "lucide-react"
+import { X, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface ContactContextType {
@@ -24,6 +24,9 @@ export function ContactProvider({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false)
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
   
+  // Validation State
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -31,35 +34,12 @@ export function ContactProvider({ children }: { children: ReactNode }) {
     message: ""
   })
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  useEffect(() => { setMounted(true) }, [])
 
-  // 1. SCROLL LOCK: Freeze background when open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden"
-    } else {
-      document.body.style.overflow = "unset"
-    }
-    return () => {
-      document.body.style.overflow = "unset"
-    }
-  }, [isOpen])
-
-  // 2. ESCAPE KEY: Close modal on 'Esc' press
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        closeContact()
-      }
-    }
-    
-    if (isOpen) {
-      window.addEventListener("keydown", handleEsc)
-    }
-    
-    return () => window.removeEventListener("keydown", handleEsc)
+    if (isOpen) { document.body.style.overflow = "hidden" } 
+    else { document.body.style.overflow = "unset" }
+    return () => { document.body.style.overflow = "unset" }
   }, [isOpen])
 
   const openContact = () => setIsOpen(true)
@@ -69,11 +49,38 @@ export function ContactProvider({ children }: { children: ReactNode }) {
     setTimeout(() => {
       setStatus("idle")
       setFormData({ name: "", email: "", phone: "", message: "" })
+      setErrors({})
     }, 500)
+  }
+
+  // --- VALIDATION LOGIC ---
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {}
+    
+    // Name: Required, min 2 chars
+    if (!formData.name.trim()) newErrors.name = "Name is required"
+    else if (formData.name.length < 2) newErrors.name = "Name is too short"
+
+    // Email: Regex check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!formData.email.trim()) newErrors.email = "Email is required"
+    else if (!emailRegex.test(formData.email)) newErrors.email = "Invalid email address"
+
+    // Phone: 10-15 digits
+    const phoneRegex = /^\+?[0-9]{10,15}$/
+    if (!formData.phone.trim()) newErrors.phone = "Phone number is required"
+    else if (!phoneRegex.test(formData.phone.replace(/[\s-]/g, ''))) newErrors.phone = "Invalid phone number (10-15 digits)"
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // 1. Run Validation
+    if (!validateForm()) return
+
     setStatus("loading")
 
     try {
@@ -90,6 +97,7 @@ export function ContactProvider({ children }: { children: ReactNode }) {
         setStatus("error")
       }
     } catch (err) {
+      console.error(err)
       setStatus("error")
     }
   }
@@ -98,26 +106,18 @@ export function ContactProvider({ children }: { children: ReactNode }) {
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-          {/* Backdrop */}
           <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             onClick={closeContact}
             className="absolute inset-0 bg-black/80 backdrop-blur-sm"
           />
-
-          {/* Modal Card */}
           <motion.div 
             initial={{ scale: 0.95, opacity: 0, y: 20 }} 
             animate={{ scale: 1, opacity: 1, y: 0 }} 
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             className="relative w-full max-w-md overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl"
           >
-            <button 
-              onClick={closeContact}
-              className="absolute right-4 top-4 rounded-full p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors"
-            >
+            <button onClick={closeContact} className="absolute right-4 top-4 rounded-full p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white transition-colors">
               <X className="h-5 w-5" />
             </button>
 
@@ -136,58 +136,58 @@ export function ContactProvider({ children }: { children: ReactNode }) {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-zinc-400 uppercase">Name</label>
-                  <input 
-                    required
-                    className="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    placeholder="John Doe"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  />
-                </div>
                 
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-zinc-400 uppercase">Phone Number</label>
+                {/* NAME FIELD */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-zinc-400 uppercase">Name <span className="text-red-500">*</span></label>
                   <input 
-                    required
-                    className="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    placeholder="+91 98765..."
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    className={`w-full rounded-md border bg-zinc-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 ${errors.name ? 'border-red-500/50 focus:ring-red-500' : 'border-zinc-800 focus:border-blue-500 focus:ring-blue-500'}`} 
+                    placeholder="John Doe" 
+                    value={formData.name} 
+                    onChange={(e) => setFormData({...formData, name: e.target.value})} 
                   />
+                  {errors.name && <p className="text-xs text-red-400 flex items-center"><AlertCircle className="w-3 h-3 mr-1"/> {errors.name}</p>}
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-zinc-400 uppercase">Email</label>
+                {/* PHONE FIELD */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-zinc-400 uppercase">Phone <span className="text-red-500">*</span></label>
                   <input 
-                    required
-                    type="email"
-                    className="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                    placeholder="work@email.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    className={`w-full rounded-md border bg-zinc-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 ${errors.phone ? 'border-red-500/50 focus:ring-red-500' : 'border-zinc-800 focus:border-blue-500 focus:ring-blue-500'}`} 
+                    placeholder="+91 98765 43210" 
+                    value={formData.phone} 
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})} 
                   />
+                  {errors.phone && <p className="text-xs text-red-400 flex items-center"><AlertCircle className="w-3 h-3 mr-1"/> {errors.phone}</p>}
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-zinc-400 uppercase">Requirements (Optional)</label>
+                {/* EMAIL FIELD */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-zinc-400 uppercase">Email <span className="text-red-500">*</span></label>
+                  <input 
+                    type="email" 
+                    className={`w-full rounded-md border bg-zinc-900 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 ${errors.email ? 'border-red-500/50 focus:ring-red-500' : 'border-zinc-800 focus:border-blue-500 focus:ring-blue-500'}`} 
+                    placeholder="work@email.com" 
+                    value={formData.email} 
+                    onChange={(e) => setFormData({...formData, email: e.target.value})} 
+                  />
+                  {errors.email && <p className="text-xs text-red-400 flex items-center"><AlertCircle className="w-3 h-3 mr-1"/> {errors.email}</p>}
+                </div>
+
+                {/* MESSAGE FIELD */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-zinc-400 uppercase">Message</label>
                   <textarea 
-                    rows={2}
-                    className="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none resize-none"
-                    placeholder="Brief details..."
-                    value={formData.message}
-                    onChange={(e) => setFormData({...formData, message: e.target.value})}
+                    rows={2} 
+                    className="w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none resize-none" 
+                    placeholder="Project details..." 
+                    value={formData.message} 
+                    onChange={(e) => setFormData({...formData, message: e.target.value})} 
                   />
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full bg-white text-black hover:bg-zinc-200 mt-2"
-                  disabled={status === "loading"}
-                >
-                  {status === "loading" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Submit
+                <Button type="submit" className="w-full bg-white text-black hover:bg-zinc-200 mt-2" disabled={status === "loading"}>
+                  {status === "loading" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} Submit Request
                 </Button>
               </form>
             )}

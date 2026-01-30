@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { Navbar } from "@/components/navbar"
-import { ContactProvider } from "@/components/contact-provider" // Make sure this is imported
-import { Chatbot } from "@/components/ui/chatbot"
+import { Navbar } from "@/components/navbar" 
+import { ContactProvider } from "@/components/contact-provider"
+import { Chatbot } from "@/components/ui/chatbot" 
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -20,11 +20,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark scroll-smooth">
       <body className={`${inter.className} min-h-screen bg-zinc-950 text-white antialiased`}>
-        {/* The Provider MUST wrap everything */}
+        {/* THIS PROVIDER MUST WRAP EVERYTHING */}
         <ContactProvider>
           <Navbar />
           {children}
-          <Chatbot />
+          <Chatbot /> 
         </ContactProvider>
       </body>
     </html>

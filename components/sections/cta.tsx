@@ -1,35 +1,31 @@
 "use client"
 
 import { useContact } from "@/components/contact-provider"
-import { motion, useMotionTemplate, useMotionValue, useSpring, useTransform } from "framer-motion"
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import { Sparkles, ArrowRight } from "lucide-react"
 import { useRef } from "react"
 
 export function CTA() {
   const { openContact } = useContact()
   
-  // --- 3D TILT LOGIC ---
   const ref = useRef<HTMLDivElement>(null)
   const x = useMotionValue(0)
   const y = useMotionValue(0)
 
-  // Smooth out the mouse movement
-  const xSpring = useSpring(x, { stiffness: 300, damping: 20 })
-  const ySpring = useSpring(y, { stiffness: 300, damping: 20 })
+  // Gentle spring physics for the tilt
+  const xSpring = useSpring(x, { stiffness: 200, damping: 20 })
+  const ySpring = useSpring(y, { stiffness: 200, damping: 20 })
 
-  // Calculate rotation based on mouse position
-  const rotateX = useTransform(ySpring, [-0.5, 0.5], ["12deg", "-12deg"])
-  const rotateY = useTransform(xSpring, [-0.5, 0.5], ["-12deg", "12deg"])
+  const rotateX = useTransform(ySpring, [-0.5, 0.5], ["8deg", "-8deg"])
+  const rotateY = useTransform(xSpring, [-0.5, 0.5], ["-8deg", "8deg"])
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!ref.current) return
     const rect = ref.current.getBoundingClientRect()
-    const width = rect.width
-    const height = rect.height
     const mouseX = e.clientX - rect.left
     const mouseY = e.clientY - rect.top
-    const xPct = mouseX / width - 0.5
-    const yPct = mouseY / height - 0.5
+    const xPct = mouseX / rect.width - 0.5
+    const yPct = mouseY / rect.height - 0.5
     x.set(xPct)
     y.set(yPct)
   }
@@ -42,7 +38,7 @@ export function CTA() {
   return (
     <section id="contact" className="py-32 relative overflow-hidden bg-zinc-950 perspective-[1000px]">
       
-      {/* 1. ATMOSPHERE: Deep Nebula Glow */}
+      {/* Atmosphere */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-indigo-600/20 blur-[120px] rounded-full mix-blend-screen animate-pulse" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full mix-blend-screen" />
@@ -50,35 +46,37 @@ export function CTA() {
 
       <div className="container px-4 md:px-6 mx-auto relative z-10 flex justify-center">
         
-        {/* 2. 3D TILT CARD WRAPPER */}
         <motion.div 
           ref={ref}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          style={{
-            rotateX,
-            rotateY,
-            transformStyle: "preserve-3d",
-          }}
+          style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
           initial={{ opacity: 0, scale: 0.9, y: 30 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ duration: 0.8, type: "spring" }}
           viewport={{ once: true }}
           className="relative w-full max-w-4xl group"
         >
-          {/* MOVING BORDER BEAM */}
-          <div className="absolute -inset-[1px] rounded-[2.5rem] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-500 animate-border-flow" />
+          {/* Border Gradient - pointer-events-none ensures it doesn't block clicks */}
+          <div 
+            style={{ pointerEvents: 'none' }}
+            className="absolute -inset-[1px] rounded-[2.5rem] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent opacity-0 group-hover:opacity-100 blur-sm transition-opacity duration-500" 
+          />
 
-          {/* MAIN GLASS CARD */}
+          {/* Main Card */}
           <div className="relative rounded-[2.5rem] overflow-hidden border border-white/10 bg-zinc-900/60 backdrop-blur-xl px-6 py-20 md:px-16 md:py-24 text-center shadow-2xl">
             
-            {/* Grid Overlay on Card */}
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05] mix-blend-overlay pointer-events-none" />
+            {/* Noise Texture - pointer-events-none */}
+            <div 
+              style={{ pointerEvents: 'none' }}
+              className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.05] mix-blend-overlay" 
+            />
             
-            {/* Content Depth Layer (Pops out slightly in 3D) */}
-            <div style={{ transform: "translateZ(50px)" }} className="flex flex-col items-center space-y-8 relative z-10">
-              
-              {/* Badge */}
+            {/* CRITICAL FIX: 
+                I removed the `style={{ transform: "translateZ(50px)" }}` 
+                from this div. This realigns the text with the clickable button.
+            */}
+            <div className="flex flex-col items-center space-y-8 relative z-10">
               <div className="inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-sm font-medium text-blue-300 shadow-[0_0_15px_rgba(59,130,246,0.3)] backdrop-blur-md mb-2">
                 <Sparkles className="w-3.5 h-3.5 mr-2 animate-pulse" />
                 Start Building Today
@@ -96,12 +94,15 @@ export function CTA() {
               </p>
               
               <div className="w-full flex justify-center pt-8">
-                {/* 3. MAGNETIC SHIMMER BUTTON */}
+                {/* BUTTON: Explicit z-index and cursor pointer */}
                 <button 
-                  onClick={openContact}
-                  className="group/btn relative w-full md:w-auto overflow-hidden rounded-full p-[1px] transition-transform active:scale-95"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevents bubbling issues
+                    openContact();
+                  }}
+                  className="group/btn relative z-50 w-full md:w-auto overflow-hidden rounded-full p-[1px] transition-transform active:scale-95 cursor-pointer"
                 >
-                  <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)]" />
+                  <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#E2CBFF_0%,#393BB2_50%,#E2CBFF_100%)] pointer-events-none" />
                   <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-zinc-950 px-10 py-5 text-lg font-medium text-white backdrop-blur-3xl transition-all group-hover/btn:bg-zinc-900">
                     Launch Your Project
                     <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover/btn:translate-x-1" />
@@ -110,7 +111,6 @@ export function CTA() {
               </div>
             </div>
           </div>
-
         </motion.div>
       </div>
     </section>
