@@ -1,69 +1,71 @@
 "use client"
 
-import React, { useRef, useState, MouseEvent } from "react"
+import React, { useRef, useState, useCallback, MouseEvent } from "react"
+import { cn } from "@/lib/utils"
 
 interface SpotlightCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode
   className?: string
   spotlightColor?: string
+  /** Blur radius of the spotlight gradient in px. Default 600. */
+  spotlightRadius?: number
 }
 
 export function SpotlightCard({
   children,
   className = "",
-  spotlightColor = "rgba(255, 255, 255, 0.25)", // Default white glow
+  spotlightColor = "rgba(255, 255, 255, 0.08)",
+  spotlightRadius = 600,
   ...props
 }: SpotlightCardProps) {
   const divRef = useRef<HTMLDivElement>(null)
-  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [pos, setPos] = useState({ x: 0, y: 0 })
   const [opacity, setOpacity] = useState(0)
 
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = useCallback((e: MouseEvent<HTMLDivElement>) => {
     if (!divRef.current) return
+    const rect = divRef.current.getBoundingClientRect()
+    setPos({ x: e.clientX - rect.left, y: e.clientY - rect.top })
+  }, [])
 
-    const div = divRef.current
-    const rect = div.getBoundingClientRect()
-
-    setPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top })
-  }
-
-  const handleFocus = () => {
-    setOpacity(1)
-  }
-
-  const handleBlur = () => {
-    setOpacity(0)
-  }
-
-  const handleMouseEnter = () => {
-    setOpacity(1)
-  }
-
-  const handleMouseLeave = () => {
-    setOpacity(0)
-  }
+  const show = useCallback(() => setOpacity(1), [])
+  const hide  = useCallback(() => setOpacity(0), [])
 
   return (
     <div
       ref={divRef}
       onMouseMove={handleMouseMove}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      // Base styles: dark background, thin border, hidden overflow
-      className={`relative overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950/50 ${className}`}
+      onMouseEnter={show}
+      onMouseLeave={hide}
+      onFocus={show}
+      onBlur={hide}
+      className={cn(
+        "relative overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/50",
+        className
+      )}
       {...props}
     >
-      {/* The Moving Spotlight Gradient */}
+      {/* Spotlight gradient layer */}
       <div
-        className="pointer-events-none absolute -inset-px opacity-0 transition duration-300"
+        aria-hidden
+        className="pointer-events-none absolute inset-0 transition-opacity duration-300"
         style={{
           opacity,
-          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 40%)`,
+          background: `radial-gradient(${spotlightRadius}px circle at ${pos.x}px ${pos.y}px, ${spotlightColor}, transparent 40%)`,
         }}
       />
-      {/* Content Container (z-index ensures text stays above glow) */}
+
+      {/* Border glow layer */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-2xl transition-opacity duration-500"
+        style={{
+          opacity: opacity * 0.5,
+          background: `radial-gradient(${spotlightRadius * 0.5}px circle at ${pos.x}px ${pos.y}px, ${spotlightColor}, transparent 60%)`,
+        }}
+      />
+
+      {/* Content — always above glow layers */}
       <div className="relative h-full z-10">{children}</div>
     </div>
   )
