@@ -5,6 +5,7 @@ import { About } from "@/components/sections/about"
 import { Metrics } from "@/components/sections/metrics"
 import { CTA } from "@/components/sections/cta"
 import { Footer } from "@/components/sections/footer"
+import { Analytics } from '@vercel/analytics/next';
 
 export default function Home() {
   return (
@@ -17,6 +18,7 @@ export default function Home() {
       <Metrics />
       <CTA />
       <Footer />
+      <Analytics />
     </main>
   )
 }
